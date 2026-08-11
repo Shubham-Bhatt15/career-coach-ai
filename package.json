@@ -41,16 +41,20 @@
     "react-spinners": "^0.15.0",
     "recharts": "^2.15.0",
     "sonner": "^1.7.1",
-    "tailwind-merge": "^2.6.0",
+    "tailwind-merge": "^2.6.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "eslint": "^9",
     "eslint-config-next": "15.1.4",
     "postcss": "^8",
     "prisma": "^6.2.1",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "typescript": "^6.0.3"
   }
 }
