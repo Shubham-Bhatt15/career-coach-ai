@@ -19,7 +19,7 @@ import {
 import Image from "next/image";
 import { checkUser } from "@/lib/checkUser";
 
-export default async function Header() {
+export default async function Header(): Promise<React.JSX.Element> {
   await checkUser();
 
   return (
