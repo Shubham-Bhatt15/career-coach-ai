@@ -3,11 +3,35 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { IndustryInsight } from "@prisma/client";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-export const generateAIInsights = async (industry) => {
+interface SalaryRange {
+  role: string;
+  min: number;
+  max: number;
+  median: number;
+  location: string;
+}
+
+type DemandLevel = "High" | "Medium" | "Low";
+type MarketOutlook = "Positive" | "Neutral" | "Negative";
+
+interface AIInsights {
+  salaryRanges: SalaryRange[];
+  growthRate: number;
+  demandLevel: DemandLevel;
+  topSkills: string[];
+  marketOutlook: MarketOutlook;
+  keyTrends: string[];
+  recommendedSkills: string[];
+}
+
+export const generateAIInsights = async (
+  industry: string
+): Promise<AIInsights> => {
   const prompt = `
           Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON format without any additional notes or explanations:
           {
@@ -33,10 +57,10 @@ export const generateAIInsights = async (industry) => {
   const text = response.text();
   const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
 
-  return JSON.parse(cleanedText);
+  return JSON.parse(cleanedText) as AIInsights;
 };
 
-export async function getIndustryInsights() {
+export async function getIndustryInsights(): Promise<IndustryInsight> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 

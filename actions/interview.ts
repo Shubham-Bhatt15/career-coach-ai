@@ -3,11 +3,23 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { Assessment, Prisma } from "@prisma/client";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-export async function generateQuiz() {
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+interface QuizResponse {
+  questions: QuizQuestion[];
+}
+
+export async function generateQuiz(): Promise<QuizQuestion[]> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -48,7 +60,7 @@ export async function generateQuiz() {
     const response = result.response;
     const text = response.text();
     const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-    const quiz = JSON.parse(cleanedText);
+    const quiz = JSON.parse(cleanedText) as QuizResponse;
 
     return quiz.questions;
   } catch (error) {
@@ -57,7 +69,19 @@ export async function generateQuiz() {
   }
 }
 
-export async function saveQuizResult(questions, answers, score) {
+interface QuestionResult {
+  question: string;
+  answer: string;
+  userAnswer: string;
+  isCorrect: boolean;
+  explanation: string;
+}
+
+export async function saveQuizResult(
+  questions: QuizQuestion[],
+  answers: string[],
+  score: number
+): Promise<Assessment> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -67,7 +91,7 @@ export async function saveQuizResult(questions, answers, score) {
 
   if (!user) throw new Error("User not found");
 
-  const questionResults = questions.map((q, index) => ({
+  const questionResults: QuestionResult[] = questions.map((q, index) => ({
     question: q.question,
     answer: q.correctAnswer,
     userAnswer: answers[index],
@@ -79,7 +103,7 @@ export async function saveQuizResult(questions, answers, score) {
   const wrongAnswers = questionResults.filter((q) => !q.isCorrect);
 
   // Only generate improvement tips if there are wrong answers
-  let improvementTip = null;
+  let improvementTip: string | null = null;
   if (wrongAnswers.length > 0) {
     const wrongQuestionsText = wrongAnswers
       .map(
@@ -115,7 +139,7 @@ export async function saveQuizResult(questions, answers, score) {
       data: {
         userId: user.id,
         quizScore: score,
-        questions: questionResults,
+        questions: questionResults as unknown as Prisma.InputJsonValue,
         category: "Technical",
         improvementTip,
       },
@@ -128,7 +152,7 @@ export async function saveQuizResult(questions, answers, score) {
   }
 }
 
-export async function getAssessments() {
+export async function getAssessments(): Promise<Assessment[]> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
