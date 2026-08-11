@@ -4,11 +4,12 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
+import type { Resume } from "@prisma/client";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-export async function saveResume(content) {
+export async function saveResume(content: string): Promise<Resume> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -40,7 +41,7 @@ export async function saveResume(content) {
   }
 }
 
-export async function getResume() {
+export async function getResume(): Promise<Resume | null> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -57,7 +58,15 @@ export async function getResume() {
   });
 }
 
-export async function improveWithAI({ current, type }) {
+interface ImproveWithAIInput {
+  current: string;
+  type: string;
+}
+
+export async function improveWithAI({
+  current,
+  type,
+}: ImproveWithAIInput): Promise<string> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 

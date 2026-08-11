@@ -3,11 +3,20 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { CoverLetter } from "@prisma/client";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-export async function generateCoverLetter(data) {
+interface GenerateCoverLetterInput {
+  jobTitle: string;
+  companyName: string;
+  jobDescription: string;
+}
+
+export async function generateCoverLetter(
+  data: GenerateCoverLetterInput
+): Promise<CoverLetter> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -60,12 +69,12 @@ export async function generateCoverLetter(data) {
 
     return coverLetter;
   } catch (error) {
-    console.error("Error generating cover letter:", error.message);
+    console.error("Error generating cover letter:", (error as Error).message);
     throw new Error("Failed to generate cover letter");
   }
 }
 
-export async function getCoverLetters() {
+export async function getCoverLetters(): Promise<CoverLetter[]> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -85,7 +94,9 @@ export async function getCoverLetters() {
   });
 }
 
-export async function getCoverLetter(id) {
+export async function getCoverLetter(
+  id: string
+): Promise<CoverLetter | null> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -103,7 +114,7 @@ export async function getCoverLetter(id) {
   });
 }
 
-export async function deleteCoverLetter(id) {
+export async function deleteCoverLetter(id: string): Promise<CoverLetter> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
