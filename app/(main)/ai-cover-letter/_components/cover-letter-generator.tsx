@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -19,8 +19,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { generateCoverLetter } from "@/actions/cover-letter";
 import useFetch from "@/hooks/use-fetch";
 import { coverLetterSchema } from "@/app/lib/schema";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { z } from "zod";
+
+type CoverLetterFormData = z.infer<typeof coverLetterSchema>;
 
 export default function CoverLetterGenerator() {
   const router = useRouter();
@@ -30,7 +32,7 @@ export default function CoverLetterGenerator() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({
+  } = useForm<CoverLetterFormData>({
     resolver: zodResolver(coverLetterSchema),
   });
 
@@ -49,11 +51,11 @@ export default function CoverLetterGenerator() {
     }
   }, [generatedLetter]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: CoverLetterFormData) => {
     try {
       await generateLetterFn(data);
     } catch (error) {
-      toast.error(error.message || "Failed to generate cover letter");
+      toast.error((error as Error).message || "Failed to generate cover letter");
     }
   };
 
@@ -63,7 +65,7 @@ export default function CoverLetterGenerator() {
         <CardHeader>
           <CardTitle>Job Details</CardTitle>
           <CardDescription>
-            Provide information about the position you're applying for
+            Provide information about the position you&apos;re applying for
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -115,7 +117,7 @@ export default function CoverLetterGenerator() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" disabled={generating}>
+              <Button type="submit" disabled={generating ?? false}>
                 {generating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
