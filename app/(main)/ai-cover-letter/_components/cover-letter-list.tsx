@@ -25,16 +25,28 @@ import {
 } from "@/components/ui/alert-dialog";
 import { deleteCoverLetter } from "@/actions/cover-letter";
 
-export default function CoverLetterList({ coverLetters }) {
+interface CoverLetter {
+  id: string;
+  jobTitle: string;
+  companyName: string;
+  jobDescription: string;
+  createdAt: string | Date;
+}
+
+interface CoverLetterListProps {
+  coverLetters: CoverLetter[];
+}
+
+export default function CoverLetterList({ coverLetters }: CoverLetterListProps) {
   const router = useRouter();
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     try {
       await deleteCoverLetter(id);
       toast.success("Cover letter deleted successfully!");
       router.refresh();
     } catch (error) {
-      toast.error(error.message || "Failed to delete cover letter");
+      toast.error((error as Error).message || "Failed to delete cover letter");
     }
   };
 
