@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Edit2, Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import type { CoverLetter } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -24,14 +25,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { deleteCoverLetter } from "@/actions/cover-letter";
-
-interface CoverLetter {
-  id: string;
-  jobTitle: string;
-  companyName: string;
-  jobDescription: string;
-  createdAt: string | Date;
-}
 
 interface CoverLetterListProps {
   coverLetters: CoverLetter[];
@@ -78,14 +71,14 @@ export default function CoverLetterList({ coverLetters }: CoverLetterListProps) 
                 </CardDescription>
               </div>
               <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => router.push(`/ai-cover-letter/${letter.id}`)}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
                 <AlertDialog>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => router.push(`/ai-cover-letter/${letter.id}`)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
                   <AlertDialogTrigger asChild>
                     <Button variant="outline" size="icon">
                       <Trash2 className="h-4 w-4" />

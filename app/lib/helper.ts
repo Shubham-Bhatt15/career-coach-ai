@@ -1,5 +1,14 @@
+interface Entry {
+  title: string;
+  organization: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string;
+}
+
 // Helper function to convert entries to markdown
-export function entriesToMarkdown(entries, type) {
+export function entriesToMarkdown(entries: Entry[], type: string): string {
   if (!entries?.length) return "";
 
   return (
